@@ -1,51 +1,88 @@
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { SplashScreen, Stack } from 'expo-router';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { View, Text } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import Main from './main'
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Splash from './Splash';
+import 'expo-dev-client'
 
-export {
-  // Catch any errors thrown by the Layout component.
-  ErrorBoundary,
-} from 'expo-router';
+const _layout = () => {
+  const [level, setLevel] = useState(null)
+  const [healthLeft, setHealthLeft] = useState(null)
 
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: '(tabs)',
+  const waitTime=1
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem('level');
+      const temp = (jsonValue != null ? JSON.parse(jsonValue) : 1)
+      setLevel(temp)
+    } catch (e) {
+      // error reading value
+    }
+  };
+  const compareWithStoredTime = async () => {
+    try {
+        const storedTime = await AsyncStorage.getItem('lastUpdateTime');
+        if (storedTime) {
+            const storedDate = new Date(storedTime);
+            const currentDate = new Date();
+            const timeDifferenceInSeconds = (currentDate - storedDate) / 1000;
+
+            if (timeDifferenceInSeconds < waitTime * 60) {
+            } else {
+                setHealthLeft(5)
+                await AsyncStorage.removeItem('lastUpdateTime')
+            }
+            // You can perform any comparison based on the time difference here
+        } else {
+            setHealthLeft(5)
+            console.log('No stored time found.');
+        }
+    } catch (error) {
+        console.log('Error reading stored time:', error);
+    }
 };
-
-export default function RootLayout() {
-  const [loaded, error] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-    ...FontAwesome.font,
-  });
-
-  // Expo Router uses Error Boundaries to catch errors in the navigation tree.
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
-
+    getData()
+    compareWithStoredTime()
+  }, [])
+  if (level == null || healthLeft==null) {
+    return <Splash/>
+  }
   return (
-    <>
-      {/* Keep the splash screen open until the assets have loaded. In the future, we should just support async font loading with a native version of font-display. */}
-      {!loaded && <SplashScreen />}
-      {loaded && <RootLayoutNav />}
-    </>
-  );
+    <Main gameLevel={level} waitTime={waitTime} healthLeft={healthLeft}/>
+  )
 }
 
-function RootLayoutNav() {
-  const colorScheme = useColorScheme();
+export default _layout
 
-  return (
-    <>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
-      </ThemeProvider>
-    </>
-  );
-}
+/*
+
+        const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
+            setLoaded(true);
+        });
+        const unsubscribeEarned = rewarded.addAdEventListener(
+            RewardedAdEventType.EARNED_REWARD,
+            reward => {
+                console.log('User earned reward of ', reward);
+                if (reward.amount == 10) {
+                    setBackReward(true)
+                }
+            },
+        );
+        const onCloseAd = rewarded.addAdEventListener(AdEventType.CLOSED, () => {
+            setLoaded(false);
+            rewarded.load()
+        });
+        const onOpenAd = rewarded.addAdEventListener(AdEventType.OPENED, () => {
+            setLoaded(false);
+        });
+        if (rewarded.loaded) {
+            setLoaded(true)
+        } else {
+            rewarded.load();
+        }
+        return () => {
+            unsubscribeLoaded();
+            unsubscribeEarned();
+
+        };*/
