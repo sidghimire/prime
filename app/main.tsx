@@ -128,7 +128,7 @@ const Main = ({ gameLevel, waitTime, healthLeft }: any) => {
     async function removeUpdateTime() {
         await AsyncStorage.removeItem('lastUpdateTime')
         setTime(0)
-        setHealth(5)
+        setHealth(3)
     }
     useEffect(() => {
         if (reviveReward == true) {
@@ -210,12 +210,12 @@ const Main = ({ gameLevel, waitTime, healthLeft }: any) => {
                     setHealth(0)
                     setTime(waitTime * 60 - timeDifferenceInSeconds)
                 } else {
-                    setHealth(5)
+                    setHealth(3)
                     await AsyncStorage.removeItem('lastUpdateTime')
                 }
                 // You can perform any comparison based on the time difference here
             } else {
-                setHealth(5)
+                setHealth(3)
                 console.log('No stored time found.');
             }
         } catch (error) {

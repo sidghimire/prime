@@ -9,7 +9,7 @@ const _layout = () => {
   const [level, setLevel] = useState(null)
   const [healthLeft, setHealthLeft] = useState(null)
 
-  const waitTime=1
+  const waitTime=20
   const getData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('level');
@@ -29,12 +29,12 @@ const _layout = () => {
 
             if (timeDifferenceInSeconds < waitTime * 60) {
             } else {
-                setHealthLeft(5)
+                setHealthLeft(3)
                 await AsyncStorage.removeItem('lastUpdateTime')
             }
             // You can perform any comparison based on the time difference here
         } else {
-            setHealthLeft(5)
+            setHealthLeft(3)
             console.log('No stored time found.');
         }
     } catch (error) {
