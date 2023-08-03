@@ -1,4 +1,3 @@
-import { View, Text } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import Main from './main'
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,80 +8,42 @@ const _layout = () => {
   const [level, setLevel] = useState(null)
   const [healthLeft, setHealthLeft] = useState(null)
 
-  const waitTime=20
+  const waitTime = 20
   const getData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('level');
       const temp = (jsonValue != null ? JSON.parse(jsonValue) : 1)
-      setLevel(temp)
-    } catch (e) {
-      // error reading value
-    }
-  };
-  const compareWithStoredTime = async () => {
-    try {
+      try {
         const storedTime = await AsyncStorage.getItem('lastUpdateTime');
         if (storedTime) {
-            const storedDate = new Date(storedTime);
-            const currentDate = new Date();
-            const timeDifferenceInSeconds = (currentDate - storedDate) / 1000;
-
-            if (timeDifferenceInSeconds < waitTime * 60) {
-            } else {
-                setHealthLeft(3)
-                await AsyncStorage.removeItem('lastUpdateTime')
-            }
-            // You can perform any comparison based on the time difference here
-        } else {
+          const storedDate = new Date(storedTime);
+          const currentDate = new Date();
+          const timeDifferenceInSeconds = (currentDate - storedDate) / 1000;
+          if (timeDifferenceInSeconds < waitTime * 60) {
+            setHealthLeft(0)
+          } else {
             setHealthLeft(3)
-            console.log('No stored time found.');
+            await AsyncStorage.removeItem('lastUpdateTime')
+          }
+        } else {
+          setHealthLeft(3)
         }
-    } catch (error) {
-        console.log('Error reading stored time:', error);
+      } catch (error) {
+      }
+      setLevel(temp)
+    } catch (e) {
     }
-};
+  };
+
   useEffect(() => {
     getData()
-    compareWithStoredTime()
-  }, [])
-  if (level == null || healthLeft==null) {
-    return <Splash/>
+  }, [healthLeft])
+  if (level == null || healthLeft == null) {
+    return <Splash />
   }
   return (
-    <Main gameLevel={level} waitTime={waitTime} healthLeft={healthLeft}/>
+    <Main gameLevel={level} waitTime={waitTime} healthLeft={healthLeft} />
   )
 }
 
 export default _layout
-
-/*
-
-        const unsubscribeLoaded = rewarded.addAdEventListener(RewardedAdEventType.LOADED, () => {
-            setLoaded(true);
-        });
-        const unsubscribeEarned = rewarded.addAdEventListener(
-            RewardedAdEventType.EARNED_REWARD,
-            reward => {
-                console.log('User earned reward of ', reward);
-                if (reward.amount == 10) {
-                    setBackReward(true)
-                }
-            },
-        );
-        const onCloseAd = rewarded.addAdEventListener(AdEventType.CLOSED, () => {
-            setLoaded(false);
-            rewarded.load()
-        });
-        const onOpenAd = rewarded.addAdEventListener(AdEventType.OPENED, () => {
-            setLoaded(false);
-        });
-        if (rewarded.loaded) {
-            setLoaded(true)
-        } else {
-            rewarded.load();
-        }
-        return () => {
-            unsubscribeLoaded();
-            unsubscribeEarned();
-
-        };*/
